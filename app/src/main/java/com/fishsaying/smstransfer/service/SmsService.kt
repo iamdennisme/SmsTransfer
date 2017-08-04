@@ -19,6 +19,7 @@ import org.jetbrains.anko.toast
  */
 
 class SmsService : Service() {
+    var isTransfer: Boolean = true;
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
@@ -32,7 +33,25 @@ class SmsService : Service() {
         var contact: ArrayList<Contact> = ArrayList()
         receiver.listener = object : SmsReceiver.MessageListener {
             override fun OnReceived(message: Message) {
-                val text = """你收到了从 ${message.address}发送来的消息内容:
+                if (message.address.contains("your main phone number")) {
+                    when (message.content) {
+                        "open" -> {
+                            isTransfer = true
+                            toast("转发已开启")
+                            return
+                        }
+                        "close" -> {
+                            isTransfer = false
+                            toast("转发已关闭")
+                            return
+                        }
+                    }
+                }
+
+                if (!isTransfer) {
+                    return
+                }
+                val text = """form ${message.address}:
 ${message.content}
                            """
                 if (text.isNullOrEmpty()) {
@@ -62,10 +81,11 @@ ${message.content}
                 }
                 if (contact.isNotEmpty()) {
                     contact.forEach {
-                        if ( message.address.contains(it.phoneNumber)) {
+                        if (message.address.contains(it.phoneNumber)) {
                             val text = """form ${message.address}(${it.name}):
 ${message.content}"""
                             sendSMS(phoneNumber, text)
+                            return
                         }
                     }
                 }
