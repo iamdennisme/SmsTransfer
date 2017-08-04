@@ -1,4 +1,4 @@
-package com.fishsaying.smstransfer
+package com.fishsaying.smstransfer.util
 
 import android.app.Activity
 import android.content.pm.PackageManager

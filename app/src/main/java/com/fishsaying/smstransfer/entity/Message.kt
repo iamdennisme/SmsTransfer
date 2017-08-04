@@ -1,4 +1,4 @@
-package com.fishsaying.smstransfer
+package com.fishsaying.smstransfer.entity
 
 import java.net.Inet4Address
 

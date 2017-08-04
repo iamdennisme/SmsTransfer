@@ -1,10 +1,11 @@
-package com.fishsaying.smstransfer
+package com.fishsaying.smstransfer.receiver
 
 import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.telephony.SmsMessage
 import android.util.Log
+import com.fishsaying.smstransfer.entity.Message
 
 
 /**
@@ -25,7 +26,7 @@ class SmsReceiver : BroadcastReceiver() {
                 val body = msg!!.messageBody
                 val address = msg.originatingAddress
                 Log.d("TAG","body=$body,address=$address")
-                listener?.OnReceived(Message(address,body))
+                listener?.OnReceived(Message(address, body))
             }
         }
     }

@@ -1,12 +1,15 @@
-package com.fishsaying.smstransfer
+package com.fishsaying.smstransfer.service
 
 import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
-import android.widget.Toast
+import com.fishsaying.smstransfer.entity.Contact
+import com.fishsaying.smstransfer.entity.Message
+import com.fishsaying.smstransfer.receiver.SmsReceiver
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import org.jetbrains.anko.toast
 
 
 @Suppress("NAME_SHADOWING")
@@ -26,10 +29,13 @@ class SmsService : Service() {
         val receiver = SmsReceiver()
         var phoneNumber: String = ""
         var keyWord: ArrayList<String> = ArrayList()
+        var contact: ArrayList<Contact> = ArrayList()
         receiver.listener = object : SmsReceiver.MessageListener {
             override fun OnReceived(message: Message) {
-                val message = "你收到了从${message.address}发送来的消息内容:${message.content}"
-                if (message.isNullOrEmpty()) {
+                val text = """你收到了从 ${message.address}发送来的消息内容:
+${message.content}
+                           """
+                if (text.isNullOrEmpty()) {
                     return
                 }
                 if (sp.contains("data")) {
@@ -37,6 +43,13 @@ class SmsService : Service() {
                     keyWord = Gson().fromJson(dataSource, object : TypeToken<List<String>>() {
                     }.type)
                 }
+
+                if (sp.contains("contact")) {
+                    val contactSource: String = sp.getString("contact", "")
+                    contact = Gson().fromJson(contactSource, object : TypeToken<List<Contact>>() {
+                    }.type)
+                }
+
                 if (sp.contains("target")) {
                     phoneNumber = sp.getString("target", "")
                 }
@@ -44,12 +57,21 @@ class SmsService : Service() {
                     return
                 }
                 if (keyWord.isEmpty()) {
-                    sendSMS(phoneNumber, message)
+                    sendSMS(phoneNumber, text)
                     return
                 }
+                if (contact.isNotEmpty()) {
+                    contact.forEach {
+                        if ( message.address.contains(it.phoneNumber)) {
+                            val text = """form ${message.address}(${it.name}):
+${message.content}"""
+                            sendSMS(phoneNumber, text)
+                        }
+                    }
+                }
                 keyWord.forEach {
-                    if (message.contains(it)) {
-                        sendSMS(phoneNumber, message)
+                    if (text.contains(it)) {
+                        sendSMS(phoneNumber, text)
                         return
                     }
                 }
@@ -61,13 +83,12 @@ class SmsService : Service() {
     }
 
     fun sendSMS(phoneNumber: String, message: String) {
-        // 获取短信管理器
         val smsManager = android.telephony.SmsManager.getDefault()
-        // 拆分短信内容（手机短信长度限制）
         val divideContents = smsManager.divideMessage(message)
         for (text in divideContents) {
             smsManager.sendTextMessage(phoneNumber, null, text, null, null)
         }
+
     }
 
 }
