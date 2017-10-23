@@ -20,7 +20,7 @@ class SmsReceiver : BroadcastReceiver() {
         val bundle = intent.extras
         var msg: SmsMessage? = null
         if (null != bundle) {
-            val objects = bundle.get("pdus") as Array<Any>
+            val objects = bundle.get("pdus") as Array<*>
             for (`object` in objects) {
                 msg = SmsMessage.createFromPdu(`object` as ByteArray)
                 val body = msg!!.messageBody

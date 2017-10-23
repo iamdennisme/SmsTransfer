@@ -52,8 +52,7 @@ class SmsService : Service() {
                     return
                 }
                 val text = """form ${message.address}:
-${message.content}
-                           """
+${message.content}""".trim()
                 if (text.isNullOrEmpty()) {
                     return
                 }
@@ -83,7 +82,7 @@ ${message.content}
                     contact.forEach {
                         if (message.address.contains(it.phoneNumber)) {
                             val text = """form ${message.address}(${it.name}):
-${message.content}"""
+${message.content}""".trim()
                             sendSMS(phoneNumber, text)
                             return
                         }
