@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
-import com.fishsaying.smstransfer.service.SmsService
 import com.fishsaying.smstransfer.util.PermissionsUtil
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -22,7 +21,11 @@ import android.provider.ContactsContract
 import android.content.ContentResolver
 import android.content.AsyncQueryHandler
 import android.database.Cursor
+import android.provider.Telephony
 import com.fishsaying.smstransfer.entity.Contact
+import com.fishsaying.smstransfer.entity.CONTACT
+import com.fishsaying.smstransfer.entity.KEY_WORD
+import com.fishsaying.smstransfer.entity.TARGET_PHONE
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     val sp: SharedPreferences by lazy {
         getSharedPreferences("smsTransfer", 0)
     }
-    val adapter: BaseAdapter by lazy {
+    private val adapter: BaseAdapter by lazy {
         ArrayAdapter(this, android.R.layout.simple_list_item_1, data)
     }
 
@@ -41,7 +44,17 @@ class MainActivity : AppCompatActivity() {
         initPermission()
         initView()
         initContact()
-        initService()
+        setDefault()
+    }
+
+    private fun setDefault() {
+        val myPackageName = packageName
+        if (!Telephony.Sms.getDefaultSmsPackage(this).equals(myPackageName)) {
+            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT)
+            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME,
+                    myPackageName)
+            startActivity(intent)
+        }
     }
 
     private fun initContact() {
@@ -68,14 +81,14 @@ class MainActivity : AppCompatActivity() {
                         // 无操作
                     } else {
                         // 创建联系人对象
-                        val contact = Contact(name, number.trim().replace("-","").replace(" ",""))
+                        val contact = Contact(name, number.trim().replace("-", "").replace(" ", ""))
                         list.add(contact)
-                       contactIdMap.put(contactId, contact)
+                        contactIdMap.put(contactId, contact)
                     }
                 }
                 if (list.size > 0) {
                     val edit = sp.edit()
-                    edit.putString("contact", Gson().toJson(list))
+                    edit.putString(CONTACT, Gson().toJson(list))
                     edit.apply()
                 }
             }
@@ -83,11 +96,6 @@ class MainActivity : AppCompatActivity() {
             super.onQueryComplete(token, cookie, cursor)
         }
 
-    }
-
-    private fun initService() {
-        val startIntent = Intent(this, SmsService::class.java)
-        startService(startIntent)
     }
 
     private fun initPermission() {
@@ -115,8 +123,8 @@ class MainActivity : AppCompatActivity() {
                 toast("请输入正确的电话号码")
                 return@setOnClickListener
             }
-            edit.putString("target", target)
-            edit.apply();
+            edit.putString(TARGET_PHONE, target)
+            edit.apply()
             toast("设置电话号码成功")
         }
         btnKeyWord.setOnClickListener {
@@ -131,7 +139,7 @@ class MainActivity : AppCompatActivity() {
             }
             data.add(keyWord)
             adapter.notifyDataSetChanged()
-            edit.putString("data", Gson().toJson(data))
+            edit.putString(KEY_WORD, Gson().toJson(data))
             edit.apply()
             toast("添加关键词成功")
         }
@@ -140,7 +148,7 @@ class MainActivity : AppCompatActivity() {
                 yesButton {
                     data.removeAt(i)
                     adapter.notifyDataSetChanged()
-                    edit.putString("data", Gson().toJson(data))
+                    edit.putString(KEY_WORD, Gson().toJson(data))
                     edit.apply()
                 }
                 noButton {
@@ -150,11 +158,11 @@ class MainActivity : AppCompatActivity() {
 
             false
         }
-        if (sp.contains("target")) {
-            editTarget.setText(sp.getString("target", ""))
+        if (sp.contains(TARGET_PHONE)) {
+            editTarget.setText(sp.getString(TARGET_PHONE, ""))
         }
-        if (sp.contains("data")) {
-            val dataSource: String = sp.getString("data", "")
+        if (sp.contains(KEY_WORD)) {
+            val dataSource: String = sp.getString(KEY_WORD, "")
             val data: ArrayList<String> = Gson().fromJson(dataSource, object : TypeToken<List<String>>() {
             }.type)
             if (data.isEmpty()) {

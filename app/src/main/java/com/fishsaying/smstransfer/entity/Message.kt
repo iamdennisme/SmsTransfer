@@ -1,10 +1,8 @@
 package com.fishsaying.smstransfer.entity
 
-import java.net.Inet4Address
-
 /**
  * Created by dennis on 2017/8/2.
  * introduction:
  *
  */
-data class Message(var address: String, var content: String)
+data class Message(var tel: String, var content: String, var name: String)

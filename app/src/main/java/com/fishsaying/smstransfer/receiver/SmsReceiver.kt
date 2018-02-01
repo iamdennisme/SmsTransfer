@@ -5,7 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.telephony.SmsMessage
 import android.util.Log
+import com.fishsaying.smstransfer.entity.CONTACT
+import com.fishsaying.smstransfer.util.HandleMessage
+import com.fishsaying.smstransfer.entity.Contact
 import com.fishsaying.smstransfer.entity.Message
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 
 /**
@@ -14,24 +19,40 @@ import com.fishsaying.smstransfer.entity.Message
  *
  */
 class SmsReceiver : BroadcastReceiver() {
-    var listener: MessageListener? =null
+    var contact: ArrayList<Contact> = ArrayList()
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("TAG","onReceive")
+        Log.d("TAG", "onReceive")
+        initContact(context)
         val bundle = intent.extras
-        var msg: SmsMessage? = null
-        if (null != bundle) {
-            val objects = bundle.get("pdus") as Array<*>
-            for (`object` in objects) {
-                msg = SmsMessage.createFromPdu(`object` as ByteArray)
-                val body = msg!!.messageBody
-                val address = msg.originatingAddress
-                Log.d("TAG","body=$body,address=$address")
-                listener?.OnReceived(Message(address, body))
-            }
+        var msg: SmsMessage
+        if (null == bundle) {
+            return
+        }
+        val objects = bundle.get("pdus") as Array<*>
+        for (dataObject in objects) {
+            msg = SmsMessage.createFromPdu(dataObject as ByteArray)
+            val body = msg.messageBody
+            val address = msg.originatingAddress
+            HandleMessage(context).handleMessage(sortMessage(body, address))
         }
     }
 
-    interface MessageListener {
-        fun OnReceived(message: Message)
+    private fun sortMessage(body: String, address: String): Message {
+        Log.d("TAG", "body=$body,address=$address")
+        contact.forEach {
+            if (it.phoneNumber == address) {
+                return Message(address, body, it.name)
+            }
+        }
+        return Message(address, body, "unknown")
+    }
+
+    private fun initContact(context: Context) {
+        val sp = context.getSharedPreferences("smsTransfer", 0)
+        if (sp.contains(CONTACT)) {
+            val contactSource: String = sp.getString(CONTACT, "")
+            contact = Gson().fromJson(contactSource, object : TypeToken<List<Contact>>() {
+            }.type)
+        }
     }
 }
