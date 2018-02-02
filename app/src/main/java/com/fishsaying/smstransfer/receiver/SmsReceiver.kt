@@ -1,14 +1,14 @@
 package com.fishsaying.smstransfer.receiver
 
-import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.telephony.SmsMessage
 import android.util.Log
 import com.fishsaying.smstransfer.entity.CONTACT
-import com.fishsaying.smstransfer.util.HandleMessage
 import com.fishsaying.smstransfer.entity.Contact
 import com.fishsaying.smstransfer.entity.Message
+import com.fishsaying.smstransfer.util.HandleMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -40,7 +40,7 @@ class SmsReceiver : BroadcastReceiver() {
     private fun sortMessage(body: String, address: String): Message {
         Log.d("TAG", "body=$body,address=$address")
         contact.forEach {
-            if (it.phoneNumber == address) {
+            if (address.contains(it.phoneNumber)) {
                 return Message(address, body, it.name)
             }
         }

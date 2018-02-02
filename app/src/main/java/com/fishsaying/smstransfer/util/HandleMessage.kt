@@ -1,8 +1,6 @@
 package com.fishsaying.smstransfer.util
 
 import android.content.Context
-import android.os.Build
-import android.support.annotation.RequiresApi
 import android.util.Log
 import com.fishsaying.smstransfer.entity.KEY_WORD
 import com.fishsaying.smstransfer.entity.Message
@@ -16,9 +14,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import rx.Observable
 import rx.Observer
-import rx.Scheduler
 import rx.schedulers.Schedulers
-import java.util.function.Consumer
 
 /**
  * Created by ${dennis.huang} on 01/02/2018.
@@ -41,7 +37,7 @@ class HandleMessage(private val context: Context) {
     }
 
     fun sendToWx(message: Message) {
-        val baseurl = "*"
+        val baseurl = "*/"
         val retrofit: Retrofit = Retrofit
                 .Builder()
                 .baseUrl(baseurl)

@@ -2,13 +2,22 @@ package com.fishsaying.smstransfer
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.AsyncQueryHandler
+import android.content.ContentResolver
 import android.content.Intent
 import android.content.SharedPreferences
+import android.database.Cursor
 import android.os.Bundle
+import android.provider.ContactsContract
+import android.provider.Telephony
 import android.support.v7.app.AppCompatActivity
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
+import com.fishsaying.smstransfer.entity.CONTACT
+import com.fishsaying.smstransfer.entity.Contact
+import com.fishsaying.smstransfer.entity.KEY_WORD
+import com.fishsaying.smstransfer.entity.TARGET_PHONE
 import com.fishsaying.smstransfer.util.PermissionsUtil
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -17,15 +26,6 @@ import org.jetbrains.anko.alert
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.yesButton
-import android.provider.ContactsContract
-import android.content.ContentResolver
-import android.content.AsyncQueryHandler
-import android.database.Cursor
-import android.provider.Telephony
-import com.fishsaying.smstransfer.entity.Contact
-import com.fishsaying.smstransfer.entity.CONTACT
-import com.fishsaying.smstransfer.entity.KEY_WORD
-import com.fishsaying.smstransfer.entity.TARGET_PHONE
 
 
 class MainActivity : AppCompatActivity() {
